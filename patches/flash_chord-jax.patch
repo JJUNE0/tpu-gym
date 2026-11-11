@@ -1,0 +1,103 @@
+--- a/robotic_grounding/flash_chord/src/flash_chord/lifecycle/reset.py
++++ b/robotic_grounding/flash_chord/src/flash_chord/lifecycle/reset.py
+@@ -16,14 +16,9 @@
+ from flash_chord.data.reference import Reference
+ from flash_chord.embodiments.binding import DeviceRobotReference
+ from flash_chord.embodiments.frames import DeviceBodyFrameMap
++from flash_chord.lifecycle.reset_context import RESET_CONTEXT_NAMES
+ from flash_chord.scene.builder import Scene
+ from flash_chord.utils.quat import quat_geodesic_angle, quat_mul_xyzw, wxyz_to_xyzw
+-
+-RESET_CONTEXT_NAMES = (
+-    "applied_voc_scale",
+-    "target_voc_scale",
+-    "normalized_settling_progress",
+-)
+ 
+ 
+ def _fill_frame_object_q(scene: Scene, reference: Reference, frame_id: int, row: np.ndarray) -> None:
+--- /dev/null
++++ b/robotic_grounding/flash_chord/src/flash_chord/lifecycle/reset_context.py
+@@ -0,0 +1,9 @@
++# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
++# SPDX-License-Identifier: Apache-2.0
++"""Names for the reset context shared by the simulator and the learner."""
++
++RESET_CONTEXT_NAMES = (
++    "applied_voc_scale",
++    "target_voc_scale",
++    "normalized_settling_progress",
++)
+--- a/robotic_grounding/flash_chord/src/flash_chord/training/flash_sac/learner.py
++++ b/robotic_grounding/flash_chord/src/flash_chord/training/flash_sac/learner.py
+@@ -17,7 +17,7 @@
+ import jax.numpy as jnp
+ import optax
+ 
+-from flash_chord.lifecycle.reset import RESET_CONTEXT_NAMES
++from flash_chord.lifecycle.reset_context import RESET_CONTEXT_NAMES
+ from flash_chord.training.flash_sac.config import TrainingConfig
+ from flash_chord.training.flash_sac.exploration import (
+     ExplorationState,
+@@ -869,10 +869,14 @@
+     objective_term_count: int,
+     termination_cause_count: int = 0,
+     tracking_error_count: int = 0,
+-    critic_context_names: tuple[str, ...] = RESET_CONTEXT_NAMES,
++    critic_context_names: tuple[str, ...] | None = RESET_CONTEXT_NAMES,
+     device: jax.Device | None = None,
+ ) -> tuple[LearnerState, LearnerExecutables]:
+-    """Initialize state and compile the two stable entry points for one task shape."""
++    """Initialize state and compile the two stable entry points for one task shape.
++
++    Pass critic_context_names=None for generic privileged inputs without the
++    FlashCHORD tracking curriculum's three reserved reset-context fields.
++    """
+     if action_dim <= 0 or objective_term_count <= 0:
+         raise ValueError(
+             f"action_dim and objective_term_count must be positive, got {action_dim} and {objective_term_count}"
+@@ -892,9 +896,9 @@
+             f"initial_critic_context must have shape ({config.world_count}, context_dim), "
+             f"got {initial_critic_context.shape}"
+         )
+-    context_names = tuple(critic_context_names)
+-    context_indices = reset_context_indices(context_names)
+-    if initial_critic_context.shape[1] != len(context_names):
++    context_names = None if critic_context_names is None else tuple(critic_context_names)
++    context_indices = None if context_names is None else reset_context_indices(context_names)
++    if context_names is not None and initial_critic_context.shape[1] != len(context_names):
+         raise ValueError(
+             f"initial_critic_context width {initial_critic_context.shape[1]} does not match "
+             f"critic context names {context_names}"
+@@ -1048,12 +1052,14 @@
+             applied_scale = jnp.where(settling_complete, target_voc_scale, context[:, applied_index])
+             return context.at[:, applied_index].set(applied_scale).at[:, target_index].set(target_voc_scale)
+ 
+-        critic_context = jax.lax.cond(
+-            stage_changed,
+-            apply_stage_context,
+-            lambda context: context,
+-            learner.critic_context,
+-        )
++        critic_context = learner.critic_context
++        if context_indices is not None:
++            critic_context = jax.lax.cond(
++                stage_changed,
++                apply_stage_context,
++                lambda context: context,
++                critic_context,
++            )
+         learner = learner.replace(critic_context=critic_context)
+         one_step_reward = frame_dt * jnp.einsum("wt,t->w", transition.objective_terms, objective_weights)
+         reward_normalizer = learner.reward_normalizer
+--- a/robotic_grounding/flash_chord/tests/training/flash_sac/test_flash_sac_learner.py
++++ b/robotic_grounding/flash_chord/tests/training/flash_sac/test_flash_sac_learner.py
+@@ -196,7 +196,7 @@
+ def test_expanded_critic_context_preserves_markov_fields_across_stage_change():
+     _, jnp = _dependencies()
+ 
+-    from flash_chord.lifecycle.reset import RESET_CONTEXT_NAMES
++    from flash_chord.lifecycle.reset_context import RESET_CONTEXT_NAMES
+     from flash_chord.training.flash_sac.learner import create_learner
+ 
+     observation, reset_context = _initial(jnp)

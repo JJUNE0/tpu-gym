@@ -1,0 +1,263 @@
+{
+  "task": "g1-flat",
+  "algorithm": "flashsac",
+  "seed": 0,
+  "validation": "One GPU training seed; TPU hardware and repeated-seed reproducibility are not validated.",
+  "duration_seconds": 2724.811492,
+  "configuration": {
+    "seed": 0,
+    "world_count": 1024,
+    "total_environment_steps": 50000896,
+    "updates_per_collection": 2.0,
+    "discount": 0.97,
+    "mixed_precision": true,
+    "compute_dtype": "float16",
+    "device": "gpu:0",
+    "resume": false,
+    "checkpoint_path": null,
+    "wandb_entity": "nvidia-isaac",
+    "wandb_project": "v2d-flash-chord",
+    "experiment_name": "sharpa",
+    "run_name": "flash_sac",
+    "curriculum": null,
+    "network": {
+      "actor_blocks": 2,
+      "actor_hidden_dim": 128,
+      "actor_head_mode": "upstream",
+      "residual_mean_head": "unit_gain",
+      "initial_normalized_std": 0.1,
+      "action_transform": "tanh",
+      "action_scale": 1.0,
+      "critic_blocks": 2,
+      "critic_hidden_dim": 256,
+      "expansion": 4,
+      "critic_count": 2,
+      "atom_count": 101,
+      "log_std_min": -10.0,
+      "log_std_max": 2.0,
+      "batch_norm_update_rate": 0.01,
+      "batch_norm_epsilon": 1e-05,
+      "rms_norm_epsilon": 1e-06,
+      "projection_epsilon": 1e-08
+    },
+    "optimization": {
+      "learning_rate_initial": 0.0003,
+      "learning_rate_peak": 0.0003,
+      "learning_rate_end": 0.00015,
+      "warmup_fraction": 1e-06,
+      "decay_fraction": 1.0,
+      "adam_beta1": 0.9,
+      "adam_beta2": 0.999,
+      "adam_epsilon": 1e-08,
+      "loss_scale_initial": 65536.0,
+      "loss_scale_growth_factor": 2.0,
+      "loss_scale_backoff_factor": 0.5,
+      "loss_scale_growth_interval": 2000,
+      "actor_update_period": 2,
+      "actor_learning_rate_multiplier": 1.0,
+      "residual_mean_learning_rate_multiplier": 1.0,
+      "behavior_cloning_coefficient": 0.0,
+      "target_tau": 0.01,
+      "learning_rate_schedule_updates": null
+    },
+    "replay": {
+      "capacity": 10000000,
+      "minimum_size": 100000,
+      "batch_size": 2048,
+      "n_step": 1,
+      "sampling": "uniform",
+      "clear_on_stage_change": false,
+      "observation_storage_dtype": "float32"
+    },
+    "exploration": {
+      "target_sigma": 0.15,
+      "initial_temperature": 0.01,
+      "zeta_exponent": 2.0,
+      "maximum_noise_repeat": 16,
+      "warmup_action": "uniform"
+    },
+    "reward_normalization": {
+      "enabled": true,
+      "normalized_return_bound": 5.0,
+      "epsilon": 1e-08,
+      "running_moments_epsilon": 0.0001
+    },
+    "checkpoint": {
+      "save_interval_environment_steps": 5000000,
+      "save_replay": false,
+      "load_replay_path": null,
+      "load_optimizer": true,
+      "load_reward_normalizer": true
+    }
+  },
+  "environment": {
+    "action_repeat": 1,
+    "action_scale": 0.5,
+    "ang_vel_yaw": [
+      -1.0,
+      1.0
+    ],
+    "command_config": {
+      "a": [
+        1.0,
+        0.8,
+        1.0
+      ],
+      "b": [
+        0.9,
+        0.25,
+        0.5
+      ]
+    },
+    "ctrl_dt": 0.02,
+    "episode_length": 1000,
+    "history_len": 1,
+    "impl": "jax",
+    "lin_vel_x": [
+      -1.0,
+      1.0
+    ],
+    "lin_vel_y": [
+      -0.5,
+      0.5
+    ],
+    "naconmax": 65536,
+    "njmax": 90,
+    "noise_config": {
+      "level": 1.0,
+      "scales": {
+        "gravity": 0.05,
+        "gyro": 0.2,
+        "joint_pos": 0.03,
+        "joint_vel": 1.5,
+        "linvel": 0.1
+      }
+    },
+    "push_config": {
+      "enable": false,
+      "interval_range": [
+        5.0,
+        10.0
+      ],
+      "magnitude_range": [
+        0.0,
+        0.0
+      ]
+    },
+    "restricted_joint_range": false,
+    "reward_config": {
+      "base_height_target": 0.5,
+      "max_contact_force": 500.0,
+      "max_foot_height": 0.15,
+      "scales": {
+        "action_rate": 0.0,
+        "alive": 0.0,
+        "ang_vel_xy": -0.15,
+        "base_height": 0.0,
+        "collision": -0.1,
+        "contact_force": -0.01,
+        "dof_acc": 0.0,
+        "dof_pos_limits": -1.0,
+        "energy": 0.0,
+        "feet_air_time": 2.0,
+        "feet_clearance": 0.0,
+        "feet_height": 0.0,
+        "feet_phase": 1.0,
+        "feet_slip": -0.25,
+        "joint_deviation_hip": -0.25,
+        "joint_deviation_knee": -0.1,
+        "lin_vel_z": 0.0,
+        "orientation": -2.0,
+        "pose": -0.1,
+        "stand_still": -1.0,
+        "termination": -100.0,
+        "torques": 0.0,
+        "tracking_ang_vel": 0.75,
+        "tracking_lin_vel": 1.0
+      },
+      "tracking_sigma": 0.25
+    },
+    "sim_dt": 0.002,
+    "soft_joint_pos_limit_factor": 0.95
+  },
+  "versions": {
+    "jax": "0.9.2",
+    "brax": "0.14.2",
+    "flax": "0.12.6",
+    "mujoco": "3.11.0",
+    "mujoco-mjx": "3.11.0",
+    "playground": "0.2.0"
+  },
+  "actor_observation_dim": 103,
+  "critic_observation_dim": 216,
+  "reset_mode": "cached_data_and_observation",
+  "num_eval_envs": 50,
+  "curve": [
+    {
+      "steps": 0,
+      "eval/episode_reward": -7.8409929275512695,
+      "eval/episode_reward_std": 2.002936363220215,
+      "eval/avg_episode_length": 48.79999923706055
+    },
+    {
+      "steps": 5000192,
+      "eval/episode_reward": -3.4682581424713135,
+      "eval/episode_reward_std": 1.4006983041763306,
+      "eval/avg_episode_length": 82.27999877929688
+    },
+    {
+      "steps": 10000384,
+      "eval/episode_reward": 8.047337532043457,
+      "eval/episode_reward_std": 6.771428108215332,
+      "eval/avg_episode_length": 1000.0
+    },
+    {
+      "steps": 15000576,
+      "eval/episode_reward": 18.53437614440918,
+      "eval/episode_reward_std": 5.292592525482178,
+      "eval/avg_episode_length": 1000.0
+    },
+    {
+      "steps": 20000768,
+      "eval/episode_reward": 28.558683395385742,
+      "eval/episode_reward_std": 3.2444236278533936,
+      "eval/avg_episode_length": 1000.0
+    },
+    {
+      "steps": 25000960,
+      "eval/episode_reward": 33.816490173339844,
+      "eval/episode_reward_std": 3.603903293609619,
+      "eval/avg_episode_length": 1000.0
+    },
+    {
+      "steps": 30001152,
+      "eval/episode_reward": 36.7411003112793,
+      "eval/episode_reward_std": 3.6377182006835938,
+      "eval/avg_episode_length": 1000.0
+    },
+    {
+      "steps": 35001344,
+      "eval/episode_reward": 36.07892608642578,
+      "eval/episode_reward_std": 8.928117752075195,
+      "eval/avg_episode_length": 948.719970703125
+    },
+    {
+      "steps": 40001536,
+      "eval/episode_reward": 39.724361419677734,
+      "eval/episode_reward_std": 3.6437597274780273,
+      "eval/avg_episode_length": 1000.0
+    },
+    {
+      "steps": 45001728,
+      "eval/episode_reward": 38.9043083190918,
+      "eval/episode_reward_std": 4.691773414611816,
+      "eval/avg_episode_length": 987.6799926757812
+    },
+    {
+      "steps": 50000896,
+      "eval/episode_reward": 40.74402618408203,
+      "eval/episode_reward_std": 3.4593913555145264,
+      "eval/avg_episode_length": 1000.0
+    }
+  ]
+}

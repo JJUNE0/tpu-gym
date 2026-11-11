@@ -1,0 +1,12 @@
+[submodule "third_party/mujoco_playground"]
+	path = third_party/mujoco_playground
+	url = https://github.com/google-deepmind/mujoco_playground.git
+[submodule "third_party/sacpp"]
+	path = third_party/sacpp
+	url = git@github.com:nerdbamboo/sacpp.git
+[submodule "third_party/FlashSAC"]
+	path = third_party/FlashSAC
+	url = https://github.com/Holiday-Robot/FlashSAC.git
+[submodule "third_party/flash_chord"]
+	path = third_party/flash_chord
+	url = https://github.com/nvidia-isaac/video_to_data.git
