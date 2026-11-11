@@ -20,7 +20,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--algorithm", choices=("ppo", "flashsac"), required=True)
     parser.add_argument("--task", choices=TASKS, default="g1-flat")
-    parser.add_argument("--platform", choices=("auto", "cpu", "gpu", "tpu"), default="auto")
+    device = parser.add_mutually_exclusive_group()
+    device.add_argument("--platform", choices=("auto", "cpu", "gpu"), default="auto")
+    device.add_argument(
+        "--tpu", dest="platform", action="store_const", const="tpu", default=argparse.SUPPRESS,
+        help="Run on TPU; execute this command inside a TPU VM",
+    )
     parser.add_argument("--num-envs", type=_positive_int)
     parser.add_argument("--steps", type=_positive_int, help="Total environment transitions")
     parser.add_argument("--episode-length", type=_positive_int)
